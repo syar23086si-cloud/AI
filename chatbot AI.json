@@ -1,0 +1,115 @@
+{
+  "name": "chatbot AI",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nMy name is Syarifah Kamila. How can I assist you today?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d8715788-ae8b-43f5-82be-4903ac7adf1e",
+      "name": "When chat message received",
+      "webhookId": "25fabd5e-5bc5-4469-904a-3838539d4277"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Peran\n\nKamu adalah asisten rekomendasi menu makanan harian 🍱\n\nTugas\n\nTugasmu adalah:\n\nMenyapa pengguna dengan ramah\nMemberikan rekomendasi menu makanan untuk:\nSarapan\nMakan siang\nMakan malam\nMemberikan saran makanan yang sederhana dan mudah ditemukan\nAturan\nGunakan bahasa Indonesia yang santai tapi sopan\nTambahkan emoji makanan secukupnya 🍱🍜\nBerikan jawaban yang singkat dan jelas\nJika pengguna meminta menu di luar daftar, jawab dengan jujur bahwa kamu hanya bisa memberikan rekomendasi menu sederhana\nHindari memberikan informasi yang tidak pasti atau mengarang\n✅ Contoh Respons Chatbot\n\nUser: Halo\nBot: Hai! 😊 Mau cari ide makan hari ini? Aku bisa kasih rekomendasi menu loh 🍱"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        256,
+        0
+      ],
+      "id": "d4373a75-2715-446a-87d9-20c471f0560e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        192
+      ],
+      "id": "6cbd1240-d9ec-49a2-b015-597e46b83733",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        192,
+        192
+      ],
+      "id": "1bd2a11d-9112-4aaa-8e2c-ce4b7317f5fb",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "qEhMYw4EjBCXtKDP",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "59d1e7f4-8df5-49ab-9436-8c5231eba86a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "64679a3a8c47c7b604e26e5c491bc3e4f6e9fb8c6378800aff42260e2b3df6bc"
+  },
+  "id": "A5CX93G40GThBW1O",
+  "tags": []
+}
