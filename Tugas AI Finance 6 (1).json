@@ -1,0 +1,339 @@
+{
+  "name": "Tugas AI Finance 6 (1)",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        32
+      ],
+      "id": "ac9ca77d-8fe2-4013-9d9d-875f862f7cb4",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OJXzVsm6pi4KCwmF",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "448c6344-3863-4a4b-92c3-7d06e7b1fc6d",
+              "leftValue": "={{ $json.From }}",
+              "rightValue": "customer@bcainsurance.co.id",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "3cd6ed50-1b53-40e4-8959-3cea9db1745b",
+              "leftValue": "={{ $json.From }}",
+              "rightValue": "haloblu@bcadigital.co.id",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "8d88b26f-1081-4229-89cc-109ee998569a",
+              "leftValue": "={{ $json.From }}",
+              "rightValue": "customer@bcalife.co.id",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1cb1ff76-6d45-4bb0-9e5f-402a2922f4dc",
+              "leftValue": "={{ $json.From }}",
+              "rightValue": "recruitmentbcaf@bcaf.id",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        32
+      ],
+      "id": "e43f2c71-5e22-4195-aa18-9a2ce58cfd5c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "6123096303",
+        "text": "=Ada email baru dari: {{ $('Gmail Trigger').item.json.From }} Subject: {{ $('Gmail Trigger').item.json.Subject }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        -160
+      ],
+      "id": "12f4867f-43ae-4d3d-884b-1b34f57b80f6",
+      "name": "Send a text message",
+      "webhookId": "62aaca1e-b0bc-45ae-bad1-b53c4448c72f",
+      "credentials": {
+        "telegramApi": {
+          "id": "y9XFAAVWglBFIfm4",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analisis teks email ini untuk tanda-tanda phishing keuangan. Fokus pada urgensi palsu, tautan mencurigakan, permintaan info pribadi, atau peniruan identitas bank. Beri skor bahaya dari 1 sampai 10. Jawab HANYA dengan format: 'Skor: [angka]'.\\n\\nEmail:{{ $json.snippet }}  Subject:{{ $json.Subject }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        128
+      ],
+      "id": "156cae12-b1aa-4201-bddb-110445134344",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil data output dari AI Agent\nconst llmOutput = $json.output; \n\n// Ambil Message ID dari Gmail Trigger (pastikan node ini terhubung ke Gmail Trigger)\nconst emailMessageId = $('Gmail Trigger').item.json.id;\n\n// Gunakan regex untuk menemukan \"Skor: [angka]\"\nconst match = llmOutput.match(/Skor:\\s*(\\d+)/);\n\nlet score = 0;\n\n// Jika ditemukan, ambil angkanya\nif (match && match[1]) {\n  score = parseInt(match[1], 10);\n}\n\nreturn {\n  score: score,\n  messageId: emailMessageId\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        128
+      ],
+      "id": "f0ed20d1-6c98-45b6-84b3-7fafbed60bce",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "278e8df4-2c9f-4e71-a41c-4cb74a837759",
+              "leftValue": "={{ $json.Score }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        128
+      ],
+      "id": "3be34cec-c474-489b-b254-6c81c8336842",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('If').item.json.id }}",
+        "labelIds": [
+          "Label_1742585773866895338"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        -64
+      ],
+      "id": "de2c37a8-0592-45e4-809c-18683fbc532c",
+      "name": "Add label to message",
+      "webhookId": "491d97e9-0fbc-4cbe-8d53-9341fea039f7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OJXzVsm6pi4KCwmF",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "6123096303",
+        "text": "=⚠️ Tinjauan Email Diperlukan ⚠️  \nEmail ini TIDAK dihapus, tapi AI mendeteksinya. Mohon periksa secara manual.   \n- Skor AI: {{ $json.score }}/10  \n- Dari: {{ $('Gmail Trigger').item.json.From }} \n- Subjek: {{ $('Gmail Trigger').item.json.Subject }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        224
+      ],
+      "id": "8840c216-1ce5-4781-80aa-f60b2d1401d7",
+      "name": "Send a text message1",
+      "webhookId": "b36b91fc-471a-4eba-b980-31207d8dfc32",
+      "credentials": {
+        "telegramApi": {
+          "id": "y9XFAAVWglBFIfm4",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "2df932d7-e933-469d-b4f7-70c8b49ce16e",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "8GFoCQko2aRdwfX8",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "09cf480d-a730-4a5d-9f98-fec013209132",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "64679a3a8c47c7b604e26e5c491bc3e4f6e9fb8c6378800aff42260e2b3df6bc"
+  },
+  "id": "ztiVKt92sEpILg00",
+  "tags": []
+}
