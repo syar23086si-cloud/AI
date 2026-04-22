@@ -1,0 +1,295 @@
+{
+  "name": "Tugas 4 AI Marketing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        0
+      ],
+      "id": "9985a86a-a98c-419c-882b-2404b9d472de",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1J4Q7IU2tkVjgf2BcVVFWs8mECt4PTEuA0RRDMNSW3zI",
+          "mode": "list",
+          "cachedResultName": "Auto Posting Scheduler (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1J4Q7IU2tkVjgf2BcVVFWs8mECt4PTEuA0RRDMNSW3zI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1649085670,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1J4Q7IU2tkVjgf2BcVVFWs8mECt4PTEuA0RRDMNSW3zI/edit#gid=1649085670"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "6f50915e-78b9-408a-9dcb-023d3ab5d43f",
+      "name": "Ambil Data Posting",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AQapvwIov7xEtGjW",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst postsToSend = [];\n\nfor (const item of items) {\n  const row = item.json;\n\n  const status = (row.Status || '').trim();\n\n  console.log('ROW:', row);\n\n  // 🔥 sementara: ambil semua Pending dulu\n  if (status === 'Pending') {\n    postsToSend.push(item);\n  }\n}\n\nreturn postsToSend;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "08a77d79-6743-4b7d-a946-6f39eb72320b",
+      "name": "Filter Ready Post"
+    },
+    {
+      "parameters": {
+        "chatId": "6123096303 ",
+        "text": "={{ $json.Content }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        0
+      ],
+      "id": "b42aca37-c20e-4310-8d90-cb48e452cf1a",
+      "name": "Send a text message",
+      "webhookId": "c12aa3cc-d681-42e6-99c6-32fda634be29",
+      "credentials": {
+        "telegramApi": {
+          "id": "y9XFAAVWglBFIfm4",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14bf5edc-728d-4cae-bfa5-7520f9e9fe9b",
+              "name": "row_number",
+              "value": "={{ $('Filter Ready Post').item.json.row_number }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        352,
+        0
+      ],
+      "id": "af245290-985c-4e9c-96db-32caf486fb81",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1J4Q7IU2tkVjgf2BcVVFWs8mECt4PTEuA0RRDMNSW3zI",
+          "mode": "list",
+          "cachedResultName": "Auto Posting Scheduler (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1J4Q7IU2tkVjgf2BcVVFWs8mECt4PTEuA0RRDMNSW3zI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1649085670,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1J4Q7IU2tkVjgf2BcVVFWs8mECt4PTEuA0RRDMNSW3zI/edit#gid=1649085670"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $('Filter Ready Post').item.json.ID }}",
+            "Status": "Published"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Scheduled Date",
+              "displayName": "Scheduled Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Scheduled Time",
+              "displayName": "Scheduled Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        0
+      ],
+      "id": "11a038cc-a5a1-4bab-9a94-ab76b958772b",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AQapvwIov7xEtGjW",
+          "name": "Google Sheets account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Ambil Data Posting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Data Posting": {
+      "main": [
+        [
+          {
+            "node": "Filter Ready Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Ready Post": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "26defddb-bb49-4249-bc1e-e2f004379840",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "64679a3a8c47c7b604e26e5c491bc3e4f6e9fb8c6378800aff42260e2b3df6bc"
+  },
+  "id": "Dk7mCGl1wnnpFzro",
+  "tags": []
+}
